@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, ArrowRight, Cross, Feather, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
-import { books } from '@/data/books';
+import { supabase } from '@/lib/supabase';
+import { Book } from '@/contexts/CartContext';
 
 const Home: React.FC = () => {
+  const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
+
+  const fetchFeaturedBooks = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .gt('stock', 0)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedBooks: Book[] = data.map(book => ({
+          id: book.id,
+          title: book.title,
+          description: book.description,
+          shortDescription: book.short_description,
+          price: book.price,
+          coverImage: book.cover_image || '/placeholder.svg',
+          year: book.year,
+          pages: book.pages,
+          language: book.language,
+        }));
+        setFeaturedBooks(formattedBooks);
+      }
+    } catch (error) {
+      console.error('Error fetching featured books:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFeaturedBooks();
+  }, [fetchFeaturedBooks]);
   return (
     <Layout>
       {/* Hero Section */}
@@ -76,14 +112,14 @@ const Home: React.FC = () => {
               className="relative hidden lg:block"
             >
               <div className="relative w-[400px] h-[500px] mx-auto">
-                <div className="absolute inset-0 bg-gradient-to-b from-gold/20 to-transparent rounded-t-full" />
-                <div className="absolute -inset-4 border-2 border-gold/30 rounded-t-full" />
-                <div className="w-full h-full rounded-t-full bg-gradient-to-b from-deep-blue-light to-primary overflow-hidden flex items-center justify-center">
-                  <div className="text-center p-8">
-                    <Cross className="w-16 h-16 text-gold mx-auto mb-4" />
-                    <p className="font-serif text-2xl text-white">Bishop's Portrait</p>
-                    <p className="text-gold/80 text-sm mt-2">1903 - 1986</p>
-                  </div>
+                <div className="absolute inset-0 bg-gradient-to-b from-gold/20 to-transparent rounded-lg" />
+                <div className="absolute -inset-4 border-2 border-gold/30 rounded-lg" />
+                <div className="w-full h-full rounded-lg overflow-hidden shadow-2xl">
+                  <img 
+                    src="/aloys.png" 
+                    alt="Monseigneur Aloys Bigirumwami in full episcopal vestments"
+                    className="w-full h-full object-cover object-center"
+                  />
                 </div>
               </div>
             </motion.div>
@@ -108,8 +144,8 @@ const Home: React.FC = () => {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {books.slice(0, 3).map((book, index) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredBooks.map((book, index) => (
               <motion.div
                 key={book.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -119,8 +155,12 @@ const Home: React.FC = () => {
               >
                 <Link to={`/books/${book.id}`} className="block group">
                   <div className="bg-card rounded-lg overflow-hidden shadow-elegant hover:shadow-gold transition-all duration-300 hover:-translate-y-1">
-                    <div className="aspect-[3/4] bg-gradient-to-br from-primary to-deep-blue-light flex items-center justify-center relative overflow-hidden">
-                      <BookOpen className="w-20 h-20 text-gold/50" />
+                    <div className="h-96 bg-gradient-to-br from-primary to-deep-blue-light flex items-center justify-center relative overflow-hidden">
+                      {book.coverImage && book.coverImage !== '/placeholder.svg' ? (
+                        <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <BookOpen className="w-20 h-20 text-gold/50" />
+                      )}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
                         <span className="text-gold text-sm">{book.year}</span>
                       </div>
@@ -133,7 +173,7 @@ const Home: React.FC = () => {
                         {book.shortDescription}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-burgundy">${book.price.toFixed(2)}</span>
+                        <span className="font-semibold text-burgundy">{book.price.toLocaleString()} RWF</span>
                         <span className="text-gold text-sm group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
                           View <ArrowRight className="w-4 h-4" />
                         </span>

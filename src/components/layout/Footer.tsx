@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Mail, Heart } from 'lucide-react';
+import { BookOpen, Mail } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -71,9 +71,6 @@ export const Footer: React.FC = () => {
         <div className="mt-10 pt-6 border-t border-white/10">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-primary-foreground/50">
             <p>© {new Date().getFullYear()} Aloys Bigirumwami Legacy. All rights reserved.</p>
-            <p className="flex items-center gap-1">
-              Made with <Heart className="h-4 w-4 text-burgundy fill-burgundy" /> for Rwanda
-            </p>
           </div>
         </div>
       </div>

@@ -1,27 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, Lock, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 const Checkout: React.FC = () => {
   const { items, totalPrice, clearCart } = useCart();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
     address: '',
     city: '',
     country: '',
     postalCode: '',
   });
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Fetch user's saved shipping address
+  const fetchShippingAddress = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('shipping_address, shipping_city, shipping_country, shipping_postal_code')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setFormData({
+          address: data.shipping_address || '',
+          city: data.shipping_city || '',
+          country: data.shipping_country || '',
+          postalCode: data.shipping_postal_code || '',
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching shipping address:', error);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchShippingAddress();
+  }, [fetchShippingAddress]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -30,19 +60,70 @@ const Checkout: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to complete your purchase.",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+
     setIsProcessing(true);
 
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Create order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert([
+          {
+            user_id: user.id,
+            total_amount: totalPrice,
+            status: 'pending',
+            shipping_address: formData.address,
+            shipping_city: formData.city,
+            shipping_country: formData.country,
+            shipping_postal_code: formData.postalCode,
+          },
+        ])
+        .select()
+        .single();
 
-    toast({
-      title: "Order Placed Successfully!",
-      description: "Thank you for your purchase. You will receive a confirmation email shortly.",
-    });
+      if (orderError) throw orderError;
 
-    clearCart();
-    setIsProcessing(false);
-    navigate('/');
+      // Create order items
+      const orderItems = items.map((item) => ({
+        order_id: order.id,
+        book_id: item.book.id,
+        quantity: item.quantity,
+        price: item.book.price,
+      }));
+
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(orderItems);
+
+      if (itemsError) throw itemsError;
+
+      toast({
+        title: "Order Placed Successfully!",
+        description: "Thank you for your purchase. You will receive a confirmation email shortly.",
+      });
+
+      clearCart();
+      setIsProcessing(false);
+      navigate('/');
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: "Order Failed",
+        description: "There was an error processing your order. Please try again.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
   };
 
   if (items.length === 0) {
@@ -92,46 +173,14 @@ const Checkout: React.FC = () => {
               className="lg:col-span-2"
             >
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Contact Information */}
-                <div className="bg-card rounded-lg p-6 shadow-elegant">
-                  <h2 className="font-serif text-xl text-foreground mb-4">Contact Information</h2>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Email address"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-gold"
-                  />
-                </div>
-
                 {/* Shipping Address */}
                 <div className="bg-card rounded-lg p-6 shadow-elegant">
                   <h2 className="font-serif text-xl text-foreground mb-4">Shipping Address</h2>
                   <div className="grid md:grid-cols-2 gap-4">
                     <input
                       type="text"
-                      name="firstName"
-                      placeholder="First name"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                      className="px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
-                    <input
-                      type="text"
-                      name="lastName"
-                      placeholder="Last name"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      required
-                      className="px-4 py-3 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-gold"
-                    />
-                    <input
-                      type="text"
                       name="address"
-                      placeholder="Address"
+                      placeholder="Street Address"
                       value={formData.address}
                       onChange={handleInputChange}
                       required
@@ -197,7 +246,7 @@ const Checkout: React.FC = () => {
                   ) : (
                     <>
                       <Lock className="mr-2 h-5 w-5" />
-                      Place Order - ${totalPrice.toFixed(2)}
+                      Place Order - {totalPrice.toLocaleString()} RWF
                     </>
                   )}
                 </Button>
@@ -225,7 +274,7 @@ const Checkout: React.FC = () => {
                           {item.book.title}
                         </h4>
                         <p className="text-muted-foreground text-sm">
-                          ${(item.book.price * item.quantity).toFixed(2)}
+                          {(item.book.price * item.quantity).toLocaleString()} RWF
                         </p>
                       </div>
                     </div>
@@ -235,7 +284,7 @@ const Checkout: React.FC = () => {
                 <div className="border-t border-border pt-4 space-y-2">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>{totalPrice.toLocaleString()} RWF</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Shipping</span>
@@ -243,7 +292,7 @@ const Checkout: React.FC = () => {
                   </div>
                   <div className="flex justify-between text-lg font-semibold pt-2 border-t border-border">
                     <span>Total</span>
-                    <span className="text-burgundy">${totalPrice.toFixed(2)}</span>
+                    <span className="text-burgundy">{totalPrice.toLocaleString()} RWF</span>
                   </div>
                 </div>
               </div>

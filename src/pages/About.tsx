@@ -173,11 +173,12 @@ const About: React.FC = () => {
               className="lg:col-span-1"
             >
               <div className="bg-card rounded-lg p-6 shadow-elegant sticky top-24">
-                <div className="aspect-square bg-gradient-to-br from-primary to-deep-blue-light rounded-lg flex items-center justify-center mb-6">
-                  <div className="text-center">
-                    <Cross className="w-12 h-12 text-gold mx-auto mb-2" />
-                    <p className="font-serif text-white">Bishop's Portrait</p>
-                  </div>
+                <div className="aspect-square rounded-lg overflow-hidden mb-6 shadow-lg">
+                  <img 
+                    src="/aloys.png" 
+                    alt="Monseigneur Aloys Bigirumwami in full episcopal vestments"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 
                 <h3 className="font-serif text-xl text-foreground mb-4">Key Facts</h3>

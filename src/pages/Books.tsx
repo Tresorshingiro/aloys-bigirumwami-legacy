@@ -1,17 +1,64 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, BookOpen, ArrowRight, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
-import { books, searchBooks } from '@/data/books';
+import { supabase } from '@/lib/supabase';
+import { Book } from '@/contexts/CartContext';
 
 const Books: React.FC = () => {
+  const [books, setBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'title' | 'price' | 'year'>('year');
 
+  const fetchBooks = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .gt('stock', 0)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedBooks: Book[] = (data || []).map(book => ({
+        id: book.id,
+        title: book.title,
+        description: book.description,
+        shortDescription: book.short_description,
+        price: book.price,
+        coverImage: book.cover_image || '/placeholder.svg',
+        year: book.year,
+        pages: book.pages,
+        language: book.language,
+      }));
+
+      setBooks(formattedBooks);
+    } catch (error) {
+      console.error('Error fetching books:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBooks();
+  }, [fetchBooks]);
+
   const filteredAndSortedBooks = useMemo(() => {
-    let result = searchQuery ? searchBooks(searchQuery) : [...books];
+    let result = [...books];
+    
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        book =>
+          book.title.toLowerCase().includes(query) ||
+          book.description.toLowerCase().includes(query) ||
+          book.shortDescription.toLowerCase().includes(query)
+      );
+    }
     
     result.sort((a, b) => {
       switch (sortBy) {
@@ -27,7 +74,20 @@ const Books: React.FC = () => {
     });
     
     return result;
-  }, [searchQuery, sortBy]);
+  }, [books, searchQuery, sortBy]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading books...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -103,8 +163,12 @@ const Books: React.FC = () => {
                   <Link to={`/books/${book.id}`} className="block group h-full">
                     <div className="bg-card rounded-lg overflow-hidden shadow-elegant hover:shadow-gold transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
                       {/* Book Cover */}
-                      <div className="aspect-[3/4] bg-gradient-to-br from-primary to-deep-blue-light flex items-center justify-center relative overflow-hidden">
-                        <BookOpen className="w-20 h-20 text-gold/50 group-hover:scale-110 transition-transform duration-300" />
+                      <div className="h-96 bg-gradient-to-br from-primary to-deep-blue-light flex items-center justify-center relative overflow-hidden">
+                        {book.coverImage && book.coverImage !== '/placeholder.svg' ? (
+                          <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <BookOpen className="w-20 h-20 text-gold/50 group-hover:scale-110 transition-transform duration-300" />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         <div className="absolute bottom-0 left-0 right-0 p-4">
                           <span className="inline-block px-3 py-1 bg-gold/20 backdrop-blur-sm rounded-full text-gold text-sm">
@@ -124,7 +188,7 @@ const Books: React.FC = () => {
                         
                         <div className="flex items-center justify-between pt-4 border-t border-border">
                           <div>
-                            <span className="font-serif text-2xl text-burgundy">${book.price.toFixed(2)}</span>
+                            <span className="font-serif text-2xl text-burgundy">{book.price.toLocaleString()} RWF</span>
                             {book.language && (
                               <span className="block text-xs text-muted-foreground">{book.language}</span>
                             )}

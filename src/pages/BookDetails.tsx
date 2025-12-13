@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ShoppingCart, BookOpen, Calendar, FileText, Globe, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
-import { getBookById, books } from '@/data/books';
+import { supabase } from '@/lib/supabase';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { Book } from '@/contexts/CartContext';
 
 const BookDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,7 +15,82 @@ const BookDetails: React.FC = () => {
   const { addToCart } = useCart();
   const { toast } = useToast();
   
-  const book = id ? getBookById(id) : undefined;
+  const [book, setBook] = useState<Book | null>(null);
+  const [relatedBooks, setRelatedBooks] = useState<Book[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBook = useCallback(async () => {
+    if (!id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('books')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const formattedBook: Book = {
+          id: data.id,
+          title: data.title,
+          description: data.description,
+          shortDescription: data.short_description,
+          price: data.price,
+          coverImage: data.cover_image || '/placeholder.svg',
+          year: data.year,
+          pages: data.pages,
+          language: data.language,
+        };
+        setBook(formattedBook);
+
+        // Fetch related books
+        const { data: related } = await supabase
+          .from('books')
+          .select('*')
+          .neq('id', id)
+          .gt('stock', 0)
+          .limit(3);
+
+        if (related) {
+          const formattedRelated: Book[] = related.map(b => ({
+            id: b.id,
+            title: b.title,
+            description: b.description,
+            shortDescription: b.short_description,
+            price: b.price,
+            coverImage: b.cover_image || '/placeholder.svg',
+            year: b.year,
+            pages: b.pages,
+            language: b.language,
+          }));
+          setRelatedBooks(formattedRelated);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching book:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchBook();
+  }, [fetchBook]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading book details...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!book) {
     return (
@@ -37,14 +113,14 @@ const BookDetails: React.FC = () => {
   }
 
   const handleAddToCart = () => {
-    addToCart(book);
-    toast({
-      title: "Added to Cart",
-      description: `${book.title} has been added to your cart.`,
-    });
+    if (book) {
+      addToCart(book);
+      toast({
+        title: "Added to Cart",
+        description: `${book.title} has been added to your cart.`,
+      });
+    }
   };
-
-  const relatedBooks = books.filter(b => b.id !== book.id).slice(0, 3);
 
   return (
     <Layout>
@@ -68,14 +144,19 @@ const BookDetails: React.FC = () => {
       {/* Book Details */}
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8">
             {/* Book Cover */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
+              className="max-w-md mx-auto lg:mx-0"
             >
-              <div className="aspect-[3/4] bg-gradient-to-br from-primary to-deep-blue-light rounded-lg flex items-center justify-center relative overflow-hidden shadow-elegant">
-                <BookOpen className="w-32 h-32 text-gold/50" />
+              <div className="aspect-[2/3] max-h-[550px] bg-gradient-to-br from-primary to-deep-blue-light rounded-lg flex items-center justify-center relative overflow-hidden shadow-elegant">
+                {book.coverImage && book.coverImage !== '/placeholder.svg' ? (
+                  <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+                ) : (
+                  <BookOpen className="w-32 h-32 text-gold/50" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <h2 className="font-serif text-2xl text-white mb-2">{book.title}</h2>
@@ -137,7 +218,7 @@ const BookDetails: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-muted-foreground text-sm">Price</p>
-                    <p className="font-serif text-4xl text-burgundy">${book.price.toFixed(2)}</p>
+                    <p className="font-serif text-4xl text-burgundy">{book.price.toLocaleString()} RWF</p>
                   </div>
                   <div className="flex items-center gap-2 text-green-600">
                     <Check className="w-4 h-4" />
@@ -175,14 +256,18 @@ const BookDetails: React.FC = () => {
               {relatedBooks.map((relatedBook) => (
                 <Link key={relatedBook.id} to={`/books/${relatedBook.id}`} className="block group">
                   <div className="bg-card rounded-lg overflow-hidden shadow-elegant hover:shadow-gold transition-all duration-300 hover:-translate-y-1">
-                    <div className="aspect-[3/4] bg-gradient-to-br from-primary to-deep-blue-light flex items-center justify-center">
-                      <BookOpen className="w-16 h-16 text-gold/50 group-hover:scale-110 transition-transform" />
+                    <div className="h-80 bg-gradient-to-br from-primary to-deep-blue-light flex items-center justify-center relative overflow-hidden">
+                      {relatedBook.coverImage && relatedBook.coverImage !== '/placeholder.svg' ? (
+                        <img src={relatedBook.coverImage} alt={relatedBook.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <BookOpen className="w-16 h-16 text-gold/50 group-hover:scale-110 transition-transform" />
+                      )}
                     </div>
                     <div className="p-4">
                       <h3 className="font-serif text-lg text-foreground mb-1 group-hover:text-gold transition-colors line-clamp-1">
                         {relatedBook.title}
                       </h3>
-                      <p className="font-semibold text-burgundy">${relatedBook.price.toFixed(2)}</p>
+                      <p className="font-semibold text-burgundy">{relatedBook.price.toLocaleString()} RWF</p>
                     </div>
                   </div>
                 </Link>

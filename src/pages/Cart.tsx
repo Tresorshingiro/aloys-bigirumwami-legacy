@@ -12,7 +12,7 @@ const Cart: React.FC = () => {
   if (items.length === 0) {
     return (
       <Layout>
-        <div className="min-h-[60vh] flex items-center justify-center py-16">
+        <div className="min-h-screen flex items-center justify-center py-32">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -38,17 +38,17 @@ const Cart: React.FC = () => {
   return (
     <Layout>
       {/* Header */}
-      <section className="py-8 bg-gradient-hero">
+      <section className="py-6 bg-gradient-hero">
         <div className="container mx-auto px-4">
-          <h1 className="font-serif text-3xl md:text-4xl text-white">
+          <h1 className="font-serif text-2xl md:text-3xl text-white">
             Shopping <span className="text-gold">Cart</span>
           </h1>
-          <p className="text-white/70 mt-2">{totalItems} items in your cart</p>
+          <p className="text-white/70 text-sm mt-1">{totalItems} items in your cart</p>
         </div>
       </section>
 
       {/* Cart Content */}
-      <section className="py-12 bg-background">
+      <section className="py-20 md:py-32 min-h-screen bg-background">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
@@ -63,8 +63,12 @@ const Cart: React.FC = () => {
                 >
                   {/* Book Cover */}
                   <Link to={`/books/${item.book.id}`} className="shrink-0">
-                    <div className="w-24 h-32 bg-gradient-to-br from-primary to-deep-blue-light rounded flex items-center justify-center">
-                      <BookOpen className="w-10 h-10 text-gold/50" />
+                    <div className="w-24 h-32 bg-gradient-to-br from-primary to-deep-blue-light rounded flex items-center justify-center overflow-hidden">
+                      {item.book.coverImage && item.book.coverImage !== '/placeholder.svg' ? (
+                        <img src={item.book.coverImage} alt={item.book.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <BookOpen className="w-10 h-10 text-gold/50" />
+                      )}
                     </div>
                   </Link>
 
@@ -109,11 +113,11 @@ const Cart: React.FC = () => {
                   {/* Price */}
                   <div className="text-right shrink-0">
                     <p className="font-serif text-xl text-burgundy">
-                      ${(item.book.price * item.quantity).toFixed(2)}
+                      {(item.book.price * item.quantity).toLocaleString()} RWF
                     </p>
                     {item.quantity > 1 && (
                       <p className="text-muted-foreground text-sm">
-                        ${item.book.price.toFixed(2)} each
+                        {item.book.price.toLocaleString()} RWF each
                       </p>
                     )}
                   </div>
@@ -134,7 +138,7 @@ const Cart: React.FC = () => {
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-muted-foreground">
                     <span>Subtotal ({totalItems} items)</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>{totalPrice.toLocaleString()} RWF</span>
                   </div>
                   <div className="flex justify-between text-muted-foreground">
                     <span>Shipping</span>
@@ -143,7 +147,7 @@ const Cart: React.FC = () => {
                   <div className="border-t border-border pt-3">
                     <div className="flex justify-between">
                       <span className="font-semibold text-foreground">Total</span>
-                      <span className="font-serif text-2xl text-burgundy">${totalPrice.toFixed(2)}</span>
+                      <span className="font-serif text-2xl text-burgundy">{totalPrice.toLocaleString()} RWF</span>
                     </div>
                   </div>
                 </div>
