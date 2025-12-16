@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Cross, BookOpen, Church, Users, Award, Calendar } from 'lucide-react';
+import { Cross, BookOpen, Church, Users, Award, Calendar, Heart } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 
 const timelineEvents = [
@@ -65,11 +65,70 @@ const About: React.FC = () => {
             className="text-center max-w-3xl mx-auto"
           >
             <h1 className="font-serif text-4xl md:text-5xl text-white mb-4">
-              About <span className="text-gold">Monseigneur Bigirumwami</span>
+              About <span className="text-gold">Foyer Bigirumwami</span>
             </h1>
             <p className="text-white/80 text-lg">
-              The life and legacy of Rwanda's first native Catholic bishop
+              Honoring the legacy of Rwanda's first native Catholic bishop
             </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Institution Overview Section */}
+      <section className="py-16 bg-background border-b border-border">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-4xl mx-auto"
+          >
+            <div className="text-center mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-6">
+                Who We Are
+              </h2>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-8 mb-12">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="w-8 h-8 text-gold" />
+                </div>
+                <h3 className="font-serif text-xl text-foreground mb-2">Our Mission</h3>
+                <p className="text-muted-foreground">
+                  To preserve and share the literary works of Monseigneur Aloys Bigirumwami for future generations.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
+                  <Users className="w-8 h-8 text-gold" />
+                </div>
+                <h3 className="font-serif text-xl text-foreground mb-2">Our Vision</h3>
+                <p className="text-muted-foreground">
+                  To be the premier resource for authentic documentation of Rwandan cultural heritage and spiritual wisdom.
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
+                  <Heart className="w-8 h-8 text-gold" />
+                </div>
+                <h3 className="font-serif text-xl text-foreground mb-2">Our Values</h3>
+                <p className="text-muted-foreground">
+                  Authenticity, cultural preservation, education, and accessibility to all who seek knowledge.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-muted rounded-lg p-8">
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                <strong className="text-foreground">Foyer Bigirumwami</strong> is a cultural institution dedicated to preserving and promoting the extraordinary literary legacy of Monseigneur Aloys Bigirumwami. Named in his honor, we serve as the official repository and distributor of his written works.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                Our institution was founded with the belief that Bishop Bigirumwami's documentation of Rwandan traditions, customs, and spiritual insights represents an invaluable treasure for current and future generations. Through our work, we ensure that his voice continues to educate, inspire, and guide those seeking to understand the rich tapestry of Rwandan culture and the intersection of faith and tradition.
+              </p>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -77,6 +136,20 @@ const About: React.FC = () => {
       {/* Biography Section */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-4">
+              About <span className="text-gold">Monseigneur Aloys Bigirumwami</span>
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              The remarkable life of the bishop whose works we preserve
+            </p>
+          </motion.div>
+
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Main Content */}
             <motion.div

@@ -70,34 +70,34 @@ const Home: React.FC = () => {
                 transition={{ delay: 0.2 }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-gold/20 mb-6"
               >
-                <Cross className="w-4 h-4 text-gold" />
-                <span className="text-gold text-sm font-medium">First Rwandan Catholic Bishop</span>
+                <BookOpen className="w-4 h-4 text-gold" />
+                <span className="text-gold text-sm font-medium">Preserving a Literary Legacy</span>
               </motion.div>
 
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl text-white mb-6 leading-tight">
-                <span className="block">Monseigneur</span>
-                <span className="text-gold">Aloys Bigirumwami</span>
+                <span className="block">Foyer</span>
+                <span className="text-gold">Bigirumwami</span>
               </h1>
 
               <p className="text-lg md:text-xl text-white/80 mb-4 max-w-xl mx-auto lg:mx-0">
-                Pioneer of African Christianity, defender of Rwandan traditions, and author of foundational works on culture and faith.
+                A cultural institution dedicated to preserving and sharing the literary works of Monseigneur Aloys Bigirumwami, Rwanda's first Catholic bishop.
               </p>
 
               <blockquote className="relative my-8 pl-6 border-l-4 border-gold text-white/70 italic max-w-lg mx-auto lg:mx-0">
                 <Feather className="absolute -left-3 -top-2 w-6 h-6 text-gold" />
-                "The Gospel does not destroy culture, but purifies and elevates it."
+                "The Gospel does not destroy culture, but purifies and elevates it." — Mgr. Aloys Bigirumwami
               </blockquote>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link to="/books">
                   <Button variant="hero" size="xl" className="w-full sm:w-auto">
                     <BookOpen className="mr-2 h-5 w-5" />
-                    Shop Books
+                    Explore Our Collection
                   </Button>
                 </Link>
                 <Link to="/about">
                   <Button variant="outline-light" size="xl" className="w-full sm:w-auto">
-                    Learn His Story
+                    About Our Mission
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
@@ -137,10 +137,10 @@ const Home: React.FC = () => {
             className="text-center mb-12"
           >
             <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-4">
-              Literary <span className="text-gold">Legacy</span>
+              Our <span className="text-gold">Collection</span>
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Discover the written works of Bishop Bigirumwami, documenting Rwandan traditions and Christian faith.
+              Explore the authentic writings of Monseigneur Aloys Bigirumwami, preserving Rwandan traditions and documenting the intersection of culture and faith.
             </p>
           </motion.div>
 
@@ -206,22 +206,22 @@ const Home: React.FC = () => {
               viewport={{ once: true }}
             >
               <h2 className="font-serif text-3xl md:text-4xl text-foreground mb-6">
-                A Life of <span className="text-gold">Faith & Service</span>
+                Our <span className="text-gold">Mission</span>
               </h2>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Born in 1903 in Zaza, Rwanda, Aloys Bigirumwami would become one of the most influential figures in Rwandan religious and cultural history.
+                  Foyer Bigirumwami was established to honor and preserve the intellectual and spiritual legacy of Monseigneur Aloys Bigirumwami, Rwanda's first native Catholic bishop.
                 </p>
                 <p>
-                  As the first Rwandan Catholic bishop, he dedicated his life to building the local Church while preserving and documenting the rich traditions of his people.
+                  We are dedicated to making his literary works accessible to new generations, ensuring that his documentation of Rwandan traditions and insights on faith continue to inspire and educate.
                 </p>
                 <p>
-                  His writings remain essential resources for understanding Rwandan culture and the inculturation of Christian faith in Africa.
+                  Through our collection, we serve as a bridge between past and present, celebrating the rich cultural heritage that Bishop Bigirumwami worked tirelessly to preserve.
                 </p>
               </div>
               <Link to="/about" className="inline-block mt-6">
                 <Button variant="gold" size="lg">
-                  Read Full Biography
+                  Learn More About Us
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
@@ -234,10 +234,10 @@ const Home: React.FC = () => {
               className="grid grid-cols-2 gap-4"
             >
               {[
-                { label: 'Years of Service', value: '40+' },
-                { label: 'Books Written', value: '10+' },
-                { label: 'Diocese Built', value: 'Nyundo' },
-                { label: 'Legacy Lives On', value: '∞' },
+                { label: 'Works Available', value: '10+' },
+                { label: 'Years of Legacy', value: '70+' },
+                { label: 'Cultural Heritage', value: 'Preserved' },
+                { label: 'Generations Served', value: '∞' },
               ].map((stat, index) => (
                 <div
                   key={index}
@@ -266,7 +266,7 @@ const Home: React.FC = () => {
               Stay Connected
             </h2>
             <p className="text-white/70 mb-6">
-              Subscribe to receive updates about new publications and events honoring Bishop Bigirumwami's legacy.
+              Subscribe to receive updates about new editions, special events, and initiatives at Foyer Bigirumwami.
             </p>
             <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
